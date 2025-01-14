@@ -1,0 +1,68 @@
+package stepDefinitions;
+
+import static io.restassured.RestAssured.given;
+import static org.junit.Assert.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import pojo.locationdata;
+import resources.TestDataBuild;
+import pojo.AddPlace;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
+
+public class AddPlaceAPI {
+	RequestSpecification res;
+	ResponseSpecification resspec;
+	Response res1;
+	TestDataBuild data = new TestDataBuild();
+
+	@Given("Add Place Payload")
+	public void add_place_payload() {
+        RestAssured.baseURI="https://rahulshettyacademy.com";
+	
+		//Creating Request Spec Build
+		RequestSpecification req = new RequestSpecBuilder().setBaseUri("https://rahulshettyacademy.com").addQueryParam("key", "qaclick123")
+		.setContentType(ContentType.JSON).build();
+		
+		
+			 res = given().spec(req).body(data.addPlacePayload());
+				
+		 resspec = new ResponseSpecBuilder().expectStatusCode(200).expectContentType(ContentType.JSON).build();	
+			
+	}
+	@When("user calls {string} with Post http request")
+	public void user_calls_with_post_http_request(String string) {
+		 res1 = res.when().post("/maps/api/place/add/json")
+				.then().spec(resspec).extract().response();
+	}
+	@Then("the API call got success with status code {int}")
+	public void the_api_call_got_success_with_status_code(Integer int1) {
+	    assertEquals(res1.getStatusCode(),200);
+	    
+	    
+	    
+	    	}
+	@Then("{string} in response body is {string}")
+	public void in_response_body_is(String keyValue, String ExpectedValue) {
+	    // Write code here that turns the phrase above into concrete actions
+		String response = res1.asString();
+		JsonPath js = new JsonPath(response);
+		assertEquals(js.get(keyValue).toString(),ExpectedValue);
+		
+		
+	}
+
+
+
+
+}

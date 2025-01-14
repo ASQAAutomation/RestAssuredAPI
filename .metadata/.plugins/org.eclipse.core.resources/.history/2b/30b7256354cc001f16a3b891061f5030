@@ -1,0 +1,88 @@
+package stepDefinitions;
+
+import static io.restassured.RestAssured.given;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
+import static org.junit.Assert.*;
+import pojo.AddPlace;
+import pojo.locationdata;
+import resources.APIResources;
+import resources.TestDataBuild;
+import resources.Utils;
+
+public class placeValidation extends Utils {
+	//since we are using few var in most of the methods, sp defining them globally here, latre may be we will remove them
+	RequestSpecification req;
+	ResponseSpecification resspec;
+	Response res1;
+	
+	TestDataBuild data = new TestDataBuild();
+	
+	@Given("Add Place Payload with {string} {string} {string}")
+	public void add_place_payload_with(String name, String language, String address) throws IOException {
+		
+	
+		req = given().spec(requsetSpecification()).body(data.addPlacePayload(name, language, address));
+				
+		
+	}
+	
+	
+	@When("user calls {string} with {string} http request")
+	public void user_calls_with_http_request(String resources, String httpmethod) {
+		
+		APIResources resourseAPI = APIResources.valueOf(resources);	//Kind of creating object of ENUM class
+		System.out.println(resourseAPI.getResources());
+		resspec = new ResponseSpecBuilder().expectStatusCode(200).expectContentType(ContentType.JSON).build();
+		
+		if(httpmethod.equalsIgnoreCase("POST")) {
+		 res1 = req.when().post(resourseAPI.getResources());
+		}else if(httpmethod.equalsIgnoreCase("GET")) {
+			res1 = req.when().get(resourseAPI.getResources());
+		}
+	}
+	
+	
+	
+	@Then("the API call got success with status code {int}")
+	public void the_api_call_got_success_with_status_code(Integer int1) {
+	    // Write code here that turns the phrase above into concrete actions
+		assertEquals(res1.getStatusCode(),200);
+		
+		
+	    
+	}
+	
+	
+	@Then("{string} in response body is {string}")
+	public void in_response_body_is(String KeyValue, String ExpectedValue) {
+	    // Write code here that turns the phrase above into concrete actions
+		String resp = res1.asString();
+		JsonPath js = new JsonPath(resp);
+		assertEquals(js.get(KeyValue).toString(), ExpectedValue);
+		
+	}
+	
+	@Then("verify place_id created maps to {string} using {string}")
+	public void verify_place_id_created_maps_to_using(String string, String string2) {
+	     
+	    
+	}
+	
+	
+
+}
